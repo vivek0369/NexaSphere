@@ -11,11 +11,12 @@ const links = [
   { to: '/dashboard/certificates', label: 'Certificates', icon: 'Award' },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }) {
   const { email, logout } = useAuth();
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <button className="sidebar-close-btn" onClick={onClose} aria-label="Close Sidebar">×</button>
       <div className="sidebar-brand">
         <span className="brand-dot" />
         <span>NexaSphere Admin</span>
@@ -27,6 +28,7 @@ export function Sidebar() {
             to={to}
             end={to === '/dashboard'}
             className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+            onClick={onClose}
           >
             <AdminIcon name={icon} size={16} />
             {label}

@@ -1,14 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { AdminIcon } from './components/AdminIcon';
 import { Sidebar } from './components/Sidebar';
 import { Toast } from './components/Toast';
 import { OfflineBanner } from './components/OfflineBanner';
 import { LoginPage } from './pages/LoginPage';
+import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { DashboardHome } from './pages/DashboardHome';
 import { EventsManager } from './pages/EventsManager';
 import { ActivityEventsManager } from './pages/ActivityEventsManager';
 import { CoreTeamManager } from './pages/CoreTeamManager';
 import { MembershipResponsesManager } from './pages/MembershipResponsesManager';
 import { CertificateManager } from './pages/CertificateManager';
+import { useAuth } from './hooks/useAuth';
 import './styles/admin.css';
 
 function RequireAuth() {
@@ -29,10 +33,20 @@ function RequireAuth() {
 }
 
 function DashboardLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
   return (
     <div className="app-layout">
       <OfflineBanner />
-      <Sidebar />
+      <button 
+        className="mobile-sidebar-toggle" 
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle Sidebar"
+      >
+        <AdminIcon name="Menu" size={24} />
+      </button>
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="main-content">
         <Outlet />
       </main>

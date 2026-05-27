@@ -33,37 +33,11 @@ function Counter({ value, suffix = '' }) {
 
 function GlitchText({ text, color }) {
   return (
-    <span style={{ position: 'relative', display: 'inline-block' }}
+    <span style={{ position: 'relative', display: 'inline-block', color }}
       className="glitch-text"
       data-text={text}
     >
       {text}
-      <style>{`
-        .glitch-text { color: ${color}; }
-        .glitch-text::before, .glitch-text::after {
-          content: attr(data-text);
-          position: absolute;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-          opacity: 0;
-        }
-        .glitch-text:hover::before {
-          opacity: 0.7;
-          color: #ff0080;
-          clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
-          transform: translateX(-3px);
-          animation: glitch1 0.3s steps(2) infinite;
-        }
-        .glitch-text:hover::after {
-          opacity: 0.7;
-          color: #00ffff;
-          clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-          transform: translateX(3px);
-          animation: glitch2 0.3s steps(2) infinite;
-        }
-        @keyframes glitch1 { 0%{transform:translateX(-3px)} 50%{transform:translateX(3px)} 100%{transform:translateX(-3px)} }
-        @keyframes glitch2 { 0%{transform:translateX(3px)} 50%{transform:translateX(-3px)} 100%{transform:translateX(3px)} }
-      `}</style>
     </span>
   );
 }
@@ -90,20 +64,12 @@ function FloatingOrbs({ color }) {
 
 function ScanLine({ color }) {
   return (
-    <>
-      <style>{`
-        @keyframes scanline {
-          0% { top: -2px; }
-          100% { top: 100%; }
-        }
-      `}</style>
-      <div style={{
-        position: 'absolute', left: 0, right: 0, height: '2px',
-        background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-        opacity: 0.3, pointerEvents: 'none', zIndex: 0,
-        animation: 'scanline 4s linear infinite',
-      }} />
-    </>
+    <div style={{
+      position: 'absolute', left: 0, right: 0, height: '2px',
+      background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+      opacity: 0.3, pointerEvents: 'none', zIndex: 0,
+      animation: 'scanline 4s linear infinite',
+    }} />
   );
 }
 
@@ -142,13 +108,6 @@ function EventCard({ event, activityColor, onSelect, onDelete }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
         <div style={{ flex: 1 }}>
-          <button
-            className="btn btn-outline btn-sm"
-            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(event.id); }}
-            style={{ marginBottom: '8px' }}
-          >
-            Delete this event
-          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
             <h3 style={{
               fontFamily: 'Orbitron, monospace', fontSize: '0.95rem', fontWeight: 700,
@@ -183,13 +142,6 @@ function EventCard({ event, activityColor, onSelect, onDelete }) {
               ))}
             </div>
           )}
-          <button
-            className="btn btn-outline btn-sm"
-            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(event.id); }}
-            style={{ marginTop: '12px' }}
-          >
-            Delete this event
-          </button>
         </div>
         <div style={{
           color: activityColor, fontSize: '1.4rem', flexShrink: 0,
@@ -258,70 +210,6 @@ export default function ActivityDetailPage({ activity, onBack, onSelectEvent }) 
     setTimeout(() => setMounted(true), 50);
     fetchManualEvents().catch(() => {});
   }, [activity.title]);
-
-  const askAuth = () => {
-    const name = window.prompt('Enter your full name (core team):');
-    if (!name) return null;
-    const email = window.prompt('Enter your email:');
-    if (!email) return null;
-    const phone = window.prompt('Enter your phone number:');
-    if (!phone) return null;
-    const password = window.prompt('Enter password:');
-    if (!password) return null;
-    return { name, email, phone, password };
-  };
-
-  const handleAddEvent = async () => {
-    const auth = askAuth();
-    if (!auth) return;
-    const eventName = window.prompt('Event name:');
-    if (!eventName) return;
-    const eventDate = window.prompt('Event date (e.g. May 20, 2026):');
-    if (!eventDate) return;
-    const eventTagline = window.prompt('Short tagline (optional):') || '';
-    const eventDescription = window.prompt('Event description:');
-    if (!eventDescription) return;
-    setBusy(true);
-    try {
-      const url = apiBase ? `${apiBase}/api/content/activity-events/${activityKey}` : `/api/content/activity-events/${activityKey}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...auth, eventName, eventDate, eventTagline, eventDescription }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Failed to add event');
-      alert('Event added successfully.');
-      await fetchManualEvents();
-    } catch (e) {
-      alert(e?.message || 'Unable to add event.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleDeleteEvent = async (eventId) => {
-    const auth = askAuth();
-    if (!auth) return;
-    if (!window.confirm('Delete this event?')) return;
-    setBusy(true);
-    try {
-      const url = apiBase ? `${apiBase}/api/content/activity-events/${activityKey}/${eventId}` : `/api/content/activity-events/${activityKey}/${eventId}`;
-      const res = await fetch(url, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(auth),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Failed to delete event');
-      alert('Event deleted.');
-      await fetchManualEvents();
-    } catch (e) {
-      alert(e?.message || 'Unable to delete event.');
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const color = activity.color || 'var(--cyan)';
   const rgb = color.startsWith('#') ? hexToRgb(color) : '0,212,255';
@@ -405,7 +293,7 @@ export default function ActivityDetailPage({ activity, onBack, onSelectEvent }) 
       </div>
 
       
-      <div className="container" style={{ paddingTop: '56px' }}>
+      <div className="container" style={{ paddingTop: '32px' }}>
 
         
         {((activity.conductedEvents && activity.conductedEvents.length > 0) || manualEvents.length > 0) && (
@@ -422,11 +310,6 @@ export default function ActivityDetailPage({ activity, onBack, onSelectEvent }) 
               }} />
               Conducted Events
             </h2>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-              <button className="btn btn-primary btn-sm" onClick={handleAddEvent} disabled={busy}>
-                {busy ? 'Please wait...' : '+ Add Event'}
-              </button>
-            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '760px' }}>
               {[...manualEvents, ...(activity.conductedEvents || [])].map(event => (
                 <EventCard
@@ -434,7 +317,6 @@ export default function ActivityDetailPage({ activity, onBack, onSelectEvent }) 
                   event={event}
                   activityColor={color}
                   onSelect={onSelectEvent}
-                  onDelete={handleDeleteEvent}
                 />
               ))}
             </div>

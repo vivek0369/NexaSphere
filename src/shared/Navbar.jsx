@@ -171,7 +171,6 @@ if (compact) return (
   </button>
 </div>
         </div>
-      </div>
     </nav>
   );
 }

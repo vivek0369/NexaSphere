@@ -25,6 +25,7 @@
   --r1: 8px; --r2: 14px; --r3: 22px; --r4: 32px;
   --nh:  86px;
   --nhm: 88px;
+  --page-content-gap: 60px;
 
   --trans-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --trans-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);

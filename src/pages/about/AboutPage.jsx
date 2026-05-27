@@ -40,7 +40,7 @@ export default function AboutPage({ onBack }) {
         borderBottom: '1px solid var(--bdr)',
         padding: '70px 0 50px',
         textAlign: 'center',
-        marginBottom: '60px',
+        marginBottom: 'var(--page-content-gap)',
         position: 'relative', overflow: 'hidden',
       }}>
         <div className="page-banner-line" style={{ position:'absolute',top:0,left:0,right:0,height:'3px',background:'linear-gradient(90deg,var(--c1),var(--c2),var(--c3))' }}/>

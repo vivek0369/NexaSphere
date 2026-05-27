@@ -21,18 +21,21 @@ const vikasImg   = teamImg('vikas.png');
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
-// Migration: If user has old 3-member seed OR fake photos, upgrade to full official 12-member seed
+// Migration: Safe database migration using a version key to avoid deleting real user data
 try {
-  const oldTeamRaw = localStorage.getItem('ns_db_core_team');
-  if (oldTeamRaw) {
-    const oldTeam = JSON.parse(oldTeamRaw);
-    const hasFakePhotos = oldTeam.length > 0 && typeof oldTeam[0].photo === 'string' && oldTeam[0].photo.startsWith('http');
-    if (oldTeam.length === 3 || hasFakePhotos) {
-      localStorage.removeItem('ns_db_core_team');
-      localStorage.removeItem('ns_db_events');
-    }
+  const CURRENT_DB_VERSION = 'v2';
+  const savedVersion = localStorage.getItem('ns_db_version');
+  if (savedVersion !== CURRENT_DB_VERSION) {
+    localStorage.removeItem('ns_db_core_team');
+    localStorage.removeItem('ns_db_events');
+    localStorage.setItem('ns_db_version', CURRENT_DB_VERSION);
   }
 } catch (e) { if (import.meta.env.DEV) console.error('Migration failed', e); }
+
+// --- IMPORTANT NOTE ON DATA SYNC ---
+// The frontend reads from `/api/content/events`, while this admin dashboard writes
+// to `ns_db_events` in offline mode. When offline, these sources are intentionally 
+// disconnected. Connect to the live Google Apps Script / Backend for full data sync.
 
 // Mock DB helpers with default seeding
 const getDb = (key, defaultVal) => {
@@ -77,7 +80,6 @@ const setDb = (key, val) => localStorage.setItem(`ns_db_${key}`, JSON.stringify(
 let isLoggingOut = false;
 
 async function fetchWithAuth(url, options = {}) {
-  if (!auth.isOffline()) {
   const isOffline = auth.isOfflineMode();
 
   if (!isOffline) {
